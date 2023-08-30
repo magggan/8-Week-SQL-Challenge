@@ -13,7 +13,7 @@ The 8 Week SQL Challenge includes 8 case studies:
 - Case Study #7 - Balanced Tree Clothing Co.
 - Case Study #8 - Fresh Segments
 
-You can improve your SQL skills by try yourself in that challenge here https://8weeksqlchallenge.com .
+You can improve your SQL skills by trying yourself in that challenge here https://8weeksqlchallenge.com .
 ### Let's go ! 
 ![](https://8weeksqlchallenge.com/images/8-week-sql-challenge.png)
 
