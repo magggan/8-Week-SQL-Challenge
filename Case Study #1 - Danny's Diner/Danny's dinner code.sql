@@ -26,7 +26,7 @@ FROM dbo.sales as s
 JOIN dbo.menu as m
 ON s.product_id=m.product_id
 WHERE s.order_date = (SELECT min(order_date)
-					  FROM dbo.sales);
+			FROM dbo.sales);
 
 -- 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 
@@ -46,16 +46,15 @@ SELECT
 	, product_name
 	, quantity
 FROM 
-		(SELECT 
-			s.customer_id
-			, m.product_name
-			, COUNT(m.product_name) as quantity
-			, DENSE_RANK() OVER (PARTITION BY s.customer_id ORDER BY COUNT(m.product_name) desc) as r 
-		FROM dbo.sales as s 
-		JOIN dbo.menu as m 
-		ON s.product_id=m.product_id
-		GROUP BY s.customer_id, m.product_name)  AS sub
-
+	(SELECT 
+		s.customer_id
+		, m.product_name
+		, COUNT(m.product_name) as quantity
+		, DENSE_RANK() OVER (PARTITION BY s.customer_id ORDER BY COUNT(m.product_name) desc) as r 
+	FROM dbo.sales as s 
+	JOIN dbo.menu as m 
+	ON s.product_id=m.product_id
+	GROUP BY s.customer_id, m.product_name)  AS sub
 WHERE r = 1
 ORDER BY customer_id;
 
@@ -67,20 +66,19 @@ SELECT
 	, join_date
 	, order_date
 FROM
-		(SELECT 
-			mem.customer_id
-			, m.product_name
-			, mem.join_date
-			, min(s.order_date) as order_date
-			, DENSE_RANK() OVER (PARTITION BY mem.customer_id ORDER BY min(s.order_date)) as r
-		FROM dbo.sales as s 
-		JOIN dbo.menu as m 
-		ON s.product_id=m.product_id
-			JOIN members as mem
-			ON s.customer_id=mem.customer_id
-		WHERE s.order_date >= mem.join_date
-		GROUP BY mem.customer_id, mem.join_date, m.product_name) as sub
-
+	(SELECT 
+		mem.customer_id
+		, m.product_name
+		, mem.join_date
+		, min(s.order_date) as order_date
+		, DENSE_RANK() OVER (PARTITION BY mem.customer_id ORDER BY min(s.order_date)) as r
+	FROM dbo.sales as s 
+	JOIN dbo.menu as m 
+	ON s.product_id=m.product_id
+		JOIN members as mem
+		ON s.customer_id=mem.customer_id
+	WHERE s.order_date >= mem.join_date
+	GROUP BY mem.customer_id, mem.join_date, m.product_name) as sub
 WHERE r = 1;
 
 -- 7. What is the total items and amount spent for each member before they became a member?
@@ -102,10 +100,10 @@ GROUP BY s.customer_id;
 SELECT 
 	s.customer_id
 	, sum(
-			CASE 
-			when m.product_name = 'sushi' then m.price * 20
-			else m. price * 10 
-			end) as points
+		CASE 
+		when m.product_name = 'sushi' then m.price * 20
+		else m. price * 10 
+		end) as points
 FROM dbo.sales as s 
 JOIN dbo.menu as m 
 ON s.product_id = m.product_id
@@ -115,11 +113,11 @@ GROUP BY s.customer_id;
 
 SELECT s.customer_id
 		, sum(
-				CASE 
-				when m.product_name = 'sushi' then m.price * 20
-				when s.order_date between mem.join_date and dateadd(day, 7, join_date) then m.price * 20
-				else m. price * 10 
-				end) as points
+			CASE 
+			when m.product_name = 'sushi' then m.price * 20
+			when s.order_date between mem.join_date and dateadd(day, 7, join_date) then m.price * 20
+			else m. price * 10 
+			end) as points
 FROM dbo.sales as s 
 JOIN dbo.menu as m 
 ON s.product_id = m.product_id
@@ -127,7 +125,6 @@ ON s.product_id = m.product_id
 	ON s.customer_id = mem.customer_id
 WHERE s.order_date < '20210201'
 GROUP BY s.customer_id;
-
 
 -- Bonus Questions - Join All The Things
 
@@ -157,19 +154,17 @@ SELECT customer_id
 	when member = 'N' then null
 	else DENSE_RANK() OVER(PARTITION BY customer_id, member ORDER BY order_date) end as Ranking
 FROM 
-			(SELECT s.customer_id
-				, s.order_date
-				, m.product_name
-				, m.price
-				, CASE 
-				when s.order_date >= mem.join_date then 'Y'
-				else 'N'
-				END as member
-			FROM dbo.sales as s 
-			FULL JOIN dbo.menu as m 
-			ON s.product_id=m.product_id
-				FULL JOIN members as mem
-				ON s.customer_id=mem.customer_id
-			) as sub
-
+	(SELECT s.customer_id
+		, s.order_date
+		, m.product_name
+		, m.price
+		, CASE 
+		when s.order_date >= mem.join_date then 'Y'
+		else 'N'
+		END as member
+	FROM dbo.sales as s 
+	FULL JOIN dbo.menu as m 
+	ON s.product_id=m.product_id
+		FULL JOIN members as mem
+		ON s.customer_id = mem.customer_id) as sub
 ORDER BY customer_id, order_date;
